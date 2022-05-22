@@ -1,0 +1,16 @@
+version: "3.7"
+services:
+  mikrotik:
+    build:
+      dockerfile: './src/MikrotikManager/Dockerfile'
+      context: './src'
+    environment:
+      - "ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}"
+      - "Mikrotik__Address=${MIKROTIK_ADDRESS}"
+      - "Mikrotik__Port=${MIKROTIK_PORT}"
+      - "Mikrotik__Login=${MIKROTIK_LOGIN}"
+      - "Mikrotik__Password=${MIKROTIK_PASSWORD}"
+      - "Mikrotik__VpnName=${MIKROTIK_VPN_NAME}"
+    ports:
+      - "${PORT}:80"
+    restart: unless-stopped
