@@ -1,7 +1,10 @@
+using DanilovSoft.MikroApi;
 using MikrotikManager;
+using MikrotikManager.Mikrotik;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddScoped<MikrotikService>();
+builder.Services.AddScoped<MikrotikManager.Mikrotik.MikrotikManager>();
+builder.Services.AddScoped<IMikroTikConnection, MikrotikConnectionWrapper>();
 builder.Services.Configure<MikrotikConnectionSettings>(builder.Configuration.GetSection("Mikrotik"));
 builder.Services.AddSingleton(typeof(Scheduler<>));
 builder.Services.AddHostedService<MikrotikUpdaterHostedService>();

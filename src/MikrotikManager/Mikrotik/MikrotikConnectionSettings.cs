@@ -1,4 +1,4 @@
-﻿namespace MikrotikManager
+﻿namespace MikrotikManager.Mikrotik
 {
     public class MikrotikConnectionSettings
     {

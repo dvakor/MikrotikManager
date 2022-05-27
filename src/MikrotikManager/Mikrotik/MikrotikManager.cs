@@ -2,20 +2,24 @@
 using DanilovSoft.MikroApi;
 using Microsoft.Extensions.Options;
 using MikrotikManager.Contracts;
-using MikrotikManager.MikrotikModels;
+using MikrotikManager.Mikrotik.Models;
 
-namespace MikrotikManager
+namespace MikrotikManager.Mikrotik
 {
-    public sealed class MikrotikService: IAsyncDisposable
+    public sealed class MikrotikManager
     {
         private readonly IOptions<MikrotikConnectionSettings> _settings;
-        private readonly Scheduler<MikrotikService> _scheduler;
-        private MikroTikConnection? _connection;
+        private readonly Scheduler<MikrotikManager> _scheduler;
+        private readonly IMikroTikConnection _connection;
 
-        public MikrotikService(IOptions<MikrotikConnectionSettings> settings, Scheduler<MikrotikService> scheduler)
+        public MikrotikManager(
+            IOptions<MikrotikConnectionSettings> settings,
+            Scheduler<MikrotikManager> scheduler,
+            IMikroTikConnection connection)
         {
             _settings = settings;
             _scheduler = scheduler;
+            _connection = connection;
         }
         
         public async Task<DomainListDto> GetDomainList()
@@ -149,16 +153,18 @@ namespace MikrotikManager
             return string.Join('.', ip);
         }
 
-        private async ValueTask<MikroTikConnection> GetConnectionAsync()
+        private async ValueTask<IMikroTikConnection> GetConnectionAsync()
         {
-            if (_connection != null)
+            if (_connection.Connected)
+            {
                 return _connection;
+            }
             
             var settings = _settings.Value;
-            _connection = new MikroTikConnection();
+            
             await _connection.ConnectAsync(
                 settings.Login, settings.Password, 
-                settings.Address, false, settings.Port);
+                settings.Address, false, settings.Port, CancellationToken.None);
             
             return _connection;
         }
@@ -170,14 +176,6 @@ namespace MikrotikManager
                 .Command("/ip firewall address-list print")
                 .ToListAsync<AddressListItem>();
             return list;
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            if (_connection != null)
-                await _connection.QuitAsync(1000);
-            
-            _connection?.Dispose();
         }
     }
 }

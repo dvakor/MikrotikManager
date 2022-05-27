@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MikrotikManager.Contracts;
+using MikrotikManager.Mikrotik;
 
 namespace MikrotikManager
 {
@@ -11,21 +12,21 @@ namespace MikrotikManager
             return Task.CompletedTask;
         }
 
-        public static async Task<DomainListDto> GetDomainList([FromServices] MikrotikService mikrotik)
+        public static async Task<DomainListDto> GetDomainList([FromServices] Mikrotik.MikrotikManager mikrotik)
         {
             return await mikrotik.GetDomainList();
         }
 
         public static async Task AddDomain(
             HttpContext context,
-            [FromServices] MikrotikService mikrotik,
+            [FromServices] Mikrotik.MikrotikManager mikrotik,
             [FromQuery] string domain)
         {
             await mikrotik.AddDomain(domain);
         }
 
         public static async Task RemoveDomain(
-            [FromServices] MikrotikService mikrotik,
+            [FromServices] Mikrotik.MikrotikManager mikrotik,
             [FromQuery] string domain)
         {
             await mikrotik.RemoveDomain(domain);

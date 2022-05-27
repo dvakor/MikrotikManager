@@ -1,6 +1,6 @@
 ﻿using DanilovSoft.MikroApi;
 
-namespace MikrotikManager.MikrotikModels
+namespace MikrotikManager.Mikrotik.Models
 {
     public class RouteListItem
     {
