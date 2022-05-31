@@ -32,6 +32,7 @@ namespace MikrotikManager.Mikrotik
                     .Where(x => !string.IsNullOrEmpty(x.Comment))
                     .Where(x => x.Comment?.Equals("domain", StringComparison.OrdinalIgnoreCase) ?? false)
                     .Select(x => x.Address)
+                    .OrderBy(x => x)
             };
         }
 
