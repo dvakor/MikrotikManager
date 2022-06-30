@@ -18,8 +18,6 @@
         
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await using var scope = _provider.CreateAsyncScope();
-            var mikrotikService = scope.ServiceProvider.GetRequiredService<MikrotikManager>();
             while (!stoppingToken.IsCancellationRequested)
             {
                 await _scheduler.NextTick(stoppingToken);
@@ -27,7 +25,20 @@
                 if (stoppingToken.IsCancellationRequested) continue;
                 
                 _logger.LogInformation("Обновление маршрутов");
-                await mikrotikService.UpdateRoutes();
+                
+                await using var scope = _provider.CreateAsyncScope();
+                var mikrotikService = scope.ServiceProvider.GetRequiredService<MikrotikManager>();
+
+                try
+                {
+                    await mikrotikService.UpdateRoutes();
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e, "Ошибка обновления маршрутов");
+                }
+                
+                _logger.LogInformation("Обновление завершено");
             }
         }
     }

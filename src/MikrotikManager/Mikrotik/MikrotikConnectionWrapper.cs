@@ -71,7 +71,15 @@ namespace MikrotikManager.Mikrotik
         {
             if (_connection.Connected)
             {
-                _connection.Quit(1000);
+                try
+                {
+                    _connection.Quit(1000);
+                }
+                catch
+                {
+                    // Ignore
+                }
+                
             }
             _connection.Dispose();
         }

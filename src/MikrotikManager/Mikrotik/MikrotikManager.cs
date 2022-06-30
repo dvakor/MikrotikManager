@@ -123,10 +123,15 @@ namespace MikrotikManager.Mikrotik
 
             if (routesToDelete.Any())
             {
-                await api
-                    .Command("/ip route remove")
-                    .Attribute("numbers", string.Join(',', routesToDelete))
-                    .SendAsync();
+                var chunks = routesToDelete.Chunk(10);
+
+                foreach (var chunk in chunks)
+                {
+                    await api
+                        .Command("/ip route remove")
+                        .Attribute("numbers", string.Join(',', chunk))
+                        .SendAsync();
+                }
             }
 
             var subnets = ips.Select(ToSubnet).Distinct().ToList();

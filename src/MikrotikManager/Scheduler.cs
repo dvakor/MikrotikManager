@@ -2,7 +2,7 @@
 {
     public class Scheduler<T>
     {
-        private readonly TimeSpan _defaultPeriod = TimeSpan.FromMinutes(10);
+        private readonly TimeSpan _defaultPeriod = TimeSpan.FromMinutes(60);
         private readonly TimeSpan _period;
         private CancellationTokenSource _cts;
 
