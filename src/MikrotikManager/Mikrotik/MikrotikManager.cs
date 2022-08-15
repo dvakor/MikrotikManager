@@ -48,7 +48,8 @@ namespace MikrotikManager.Mikrotik
             
             if (domain.Contains('.'))
             {
-                host = domain;
+                var uri = new Uri(domain, UriKind.Absolute);
+                host = uri.Host;
             }
             else
             {
