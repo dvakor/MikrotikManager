@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Net.Sockets;
 using DanilovSoft.MikroApi;
 using Microsoft.Extensions.Options;
 using MikrotikManager.Contracts;
@@ -42,19 +43,31 @@ namespace MikrotikManager.Mikrotik
             {
                 return;
             }
+
+            string host;
             
-            if (!domain.StartsWith("http"))
+            if (domain.Contains('.'))
             {
-                domain = $"http://{domain}";
+                host = domain;
+            }
+            else
+            {
+                if (!domain.StartsWith("http"))
+                {
+                    domain = $"http://{domain}";
+                }
+            
+                var uri = new Uri(domain, UriKind.Absolute);
+
+                host = uri.Host;
             }
             
-            var uri = new Uri(domain, UriKind.Absolute);
             var settings = _settings.Value;
             var api = await GetConnectionAsync();
 
             var domains = await GetDomainListInnerAsync();
 
-            if (domains.Any(x => x.Comment?.Equals(uri.Host) ?? false))
+            if (domains.Any(x => x.Comment?.Equals(host) ?? false))
             {
                 return;
             }
@@ -63,7 +76,7 @@ namespace MikrotikManager.Mikrotik
                 .Command("/ip firewall address-list add")
                 .Attribute("list", settings.VpnName)
                 .Attribute("comment", "domain")
-                .Attribute("address", uri.Host)
+                .Attribute("address", host)
                 .SendAsync();
             
             _scheduler.Reset();
@@ -108,8 +121,9 @@ namespace MikrotikManager.Mikrotik
             var api = await GetConnectionAsync();
             var domains = await GetDomainListInnerAsync();
             var ips = domains
-                .Where(x => IPAddress.TryParse(x.Address, out _))
+                .Where(x => !IPAddress.TryParse(x.Address, out _) || IsSubnet(x.Address))
                 .Where(x => x.Name.Equals(settings.VpnName, StringComparison.OrdinalIgnoreCase))
+                .SelectMany(x => ResolveIps(x.Address))
                 .ToList();
 
             var routes = await api
@@ -147,9 +161,43 @@ namespace MikrotikManager.Mikrotik
             }
         }
 
-        private static string ToSubnet(AddressListItem addressListItem)
+        private static IEnumerable<string> ResolveIps(string address)
         {
-            var ip = addressListItem.Address
+            var ips = new List<string>();
+
+            if (IsSubnet(address))
+            {
+                ips.Add(address);
+            }
+            else
+            {
+                try
+                {
+                    var resolved = Dns.GetHostAddresses(address);
+                    ips.AddRange(resolved
+                        .Where(x => x.AddressFamily == AddressFamily.InterNetwork)
+                        .Select(x => x.ToString()));
+                }
+                catch
+                {
+                    // DO NOTHING
+                }   
+            }
+
+            return ips;
+        }
+
+        private static bool IsSubnet(string address)
+            => address.Contains('.') && address.Contains('/');
+        
+        private static string ToSubnet(string address)
+        {
+            if (IsSubnet(address))
+            {
+                return address;
+            }
+            
+            var ip = address
                 .Split('.')
                 .Take(3)
                 .ToList();
