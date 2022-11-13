@@ -1,0 +1,25 @@
+@using MikrotikManager.Services.Storage
+@inject RoutesRepository Repository
+
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col" style="width: 35%">Key</th>
+      <th scope="col" style="width: 50%">Routes</th>
+      <th scope="col" style="width: 15%">Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+  @foreach (var kv in Repository.GetRoutes())
+  {
+    <DomainItemComponent 
+      Key="@kv.Key" 
+      Routes="@kv.Value.Routes" />
+  }
+  </tbody>
+</table>
+
+
+@code {
+  
+}

@@ -12,7 +12,8 @@ namespace MikrotikManager
             return Task.CompletedTask;
         }
 
-        public static async Task<DomainListDto> GetDomainList([FromServices] Mikrotik.MikrotikManager mikrotik)
+        public static async Task<DomainListDto> GetDomainList(
+            [FromServices] Mikrotik.MikrotikManager mikrotik)
         {
             return await mikrotik.GetDomainList();
         }

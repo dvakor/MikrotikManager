@@ -1,0 +1,36 @@
+@using MikrotikManager.Services.Storage
+@using MikrotikManager.Services.Routes
+
+@inject RoutesRepository Repository
+@inject RouteSourceFactory Factory
+
+<div class="input-group mb-3">
+    <input type="text" class="form-control" 
+           placeholder="new domain \ ip \ subnet"
+           @bind="Src">
+    <button class="btn btn-primary" 
+            type="button"
+            @onclick="HandleOnClickAsync">Add</button>
+</div>
+
+@code {
+    public string? Src { get; set; }
+    
+    private async Task HandleOnClickAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Src))
+        {
+            return;
+        }
+        
+        try
+        {
+            var routeSource = Factory.GetRouteSource(Src);
+            Repository.AddRoute(Src, await routeSource.GetRoutesAsync(Src));
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+    }
+}
